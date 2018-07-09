@@ -1,0 +1,115 @@
+plugins {
+    id 'java'
+}
+
+version '0.1.0'
+
+sourceCompatibility = 1.8
+
+/*
+ * Dependency versions.
+ */
+ext.versions = [
+        'weka' : '3.8.0',
+        'junit': '4.12',
+]
+
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    // Weka
+    implementation group:"nz.ac.waikato.cms.weka", name:"weka-stable", version:"$versions.weka"
+
+    // Tests
+    testImplementation group: "nz.ac.waikato.cms.weka", name: "weka-stable", version: "$versions.weka", classifier: "tests"
+    testImplementation group: "junit", name: "junit", version: "$versions.junit"
+}
+
+/*
+ * Remove copied dependencies with clean task.
+ */
+clean.doFirst {
+    delete 'lib'
+    delete 'build'
+    delete 'dist'
+}
+
+/*
+ * Copy all compile-time dependencies into 'lib'.
+ */
+task copyDependencies(dependsOn: clean, type: Copy) {
+    from configurations.compileClasspath
+    into 'lib'
+}
+
+/*
+ * Initialize distribution directory.
+ */
+task initDistDir(dependsOn: clean) {
+    doFirst {
+        mkdir "dist/${project.name}/lib"
+    }
+}
+
+/*
+ * Copy main package libraries.
+ */
+task copyLibs(dependsOn: [copyDependencies, initDistDir], type: Copy) {
+    // Copy dependencies
+    from('lib/') {
+        exclude "weka*.jar"
+        exclude "*.pom"
+    }
+    into "dist/${project.name}/lib"
+}
+
+/*
+ * Copy miscelleneous main package files.
+ */
+task copyMisc(dependsOn: initDistDir, type: Copy) {
+    from('./') {
+        include 'GenericPropertiesCreator.props'
+        include 'GUIEditors.props'
+        include 'doc/**'
+        include 'src/main/**'
+        exclude 'src/main/*.iml'
+    }
+
+    into "dist/${project.name}/"
+}
+
+/*
+ * Copy Description.props file and replaces properties that are only known at build time, such as
+ * DATE, VERSION, etc.
+ */
+task copyDescriptionProps(dependsOn: initDistDir, type: Copy) {
+    from 'Description.props'
+    into "dist/${project.name}/"
+
+    def date = new Date().format("yyyy-MM-dd")
+    filter {
+        it.replaceAll("\\{DATE}", date)
+                .replaceAll("\\{VERSION}", "${project.version}")
+    }
+}
+
+/*
+ * Copy the projects jar archive into the main package distribution.
+ */
+task copyJar(dependsOn: [initDistDir, assemble], type: Copy) {
+    from jar.archivePath
+    into "dist/${project.name}"
+}
+
+/*
+ * Zip up the main package distribution. Destination is 'dist'.
+ */
+task makeZip(dependsOn: [copyJar, copyDescriptionProps, copyMisc, copyLibs], type: Zip) {
+    from "dist/${project.name}"
+    destinationDir file("dist")
+}
+
