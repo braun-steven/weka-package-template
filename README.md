@@ -7,8 +7,7 @@ If the package depends on a third party library which is available via maven,
  it can be added in the `build.gradle` dependency section:
  ```groovy
 dependencies {
-    implementation group:"group-id", name:"artifact-id", 
-    version:"version"
+    implementation group:"group-id", name:"artifact-id", version:"version"
 }
 ```
  
