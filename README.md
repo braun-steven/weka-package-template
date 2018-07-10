@@ -24,3 +24,31 @@ The Gradle build script provides the task `makeZip` to generate a zip file in
 ```bash
 $ ./gradlew makeZip
 ```
+
+#### ZIP content
+
+The zip content is as follows:
+```
+.
+├── Description.props
+├── GenericPropertiesCreator.props
+├── GUIEditors.props
+├── lib
+│   ├── ...
+│   └── ...
+├── src
+│   └── main
+│       └── java
+│           └── weka
+│               └── ...
+└── weka-package-name-0.1.0.jar
+```
+
+
+If further files need to be included/excluded, the `copyMisc` task has to be 
+extended with additional `include` and `exclude` statements.
+
+#### Excluding Unnecessary Transitive Dependencies
+The `lib` directory contains all dependencies specified in the `gradle.build` file. If, for some reason, a certain jar file is included in the `lib` directory that 
+is not needed during runtime, it is possible to simply add an `exclude` statement 
+in the `copyLibs` gradle task.
