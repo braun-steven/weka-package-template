@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
     // Weka
-    implementation group:"nz.ac.waikato.cms.weka", name:"weka-stable", version:"$versions.weka"
+    compileOnly group:"nz.ac.waikato.cms.weka", name:"weka-stable", version:"$versions.weka"
 
     // Tests
     testImplementation group: "nz.ac.waikato.cms.weka", name: "weka-stable", version: "$versions.weka", classifier: "tests"
@@ -42,7 +42,7 @@ clean.doFirst {
  * Copy all compile-time dependencies into 'lib'.
  */
 task copyDependencies(dependsOn: clean, type: Copy) {
-    from configurations.compileClasspath
+    from (configurations.compileClasspath - configurations.compileOnly)
     into 'lib'
 }
 
@@ -68,7 +68,7 @@ task copyLibs(dependsOn: [copyDependencies, initDistDir], type: Copy) {
 }
 
 /*
- * Copy miscelleneous main package files.
+ * Copy miscellaneous main package files.
  */
 task copyMisc(dependsOn: initDistDir, type: Copy) {
     from('./') {
